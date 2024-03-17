@@ -7,7 +7,6 @@ pub trait Decryptor {
 
 pub struct AesCbc128Sha256Decryptor {
     key: Vec<u8>,
-    iv: Vec<u8>,
     cipher: Cipher,
 }
 
@@ -15,7 +14,7 @@ pub struct AesCbc128Sha256Decryptor {
 impl AesCbc128Sha256Decryptor {
     pub fn new(key: Vec<u8>, iv: Vec<u8>) -> Self {
         let cipher = Cipher::aes_128_cbc();
-        AesCbc128Sha256Decryptor { key, iv, cipher }
+        AesCbc128Sha256Decryptor { key, cipher }
     }
 }
 
@@ -65,7 +64,7 @@ impl Decryptor for AesGCM128Sha256Decryptor {
 
         let mut c = Crypter::new(self.cipher, Mode::Decrypt, &*self.key, Some(&*nonce)).unwrap();
 
-        let mut encrypted_data = Vec::from(&data[nonce_len..]);
+        let encrypted_data = Vec::from(&data[nonce_len..]);
 
         let additional_data = [0, 0, 0, 0, 0, 0, 0, 1, 17, 3, 3];
 
