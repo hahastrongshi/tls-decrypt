@@ -1,6 +1,6 @@
 [package]
 name = "tls-decrypt"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "a simple lib to decrypt the tls cipher data"
 license = "MIT"
@@ -8,8 +8,6 @@ license = "MIT"
 
 [dependencies]
 openssl = "0.10.64"
-ring = {git = "https://github.com/hahastrongshi/ring.git", branch = "main"}
-
 
 # 添加 test dependencies
 [dev-dependencies]
