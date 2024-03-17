@@ -1,6 +1,6 @@
 [package]
 name = "tls-decrypt"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 description = "a simple lib to decrypt the tls cipher data"
 license = "MIT"
