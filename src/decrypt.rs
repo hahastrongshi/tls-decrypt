@@ -1,4 +1,5 @@
 use openssl::symm::{Cipher, Crypter, Mode};
+use ring::aead;
 
 pub trait Decryptor {
     // the return value maybe change to another type
@@ -10,9 +11,8 @@ pub struct AesCbc128Sha256Decryptor {
     cipher: Cipher,
 }
 
-
 impl AesCbc128Sha256Decryptor {
-    pub fn new(key: Vec<u8>, iv: Vec<u8>) -> Self {
+    pub fn new(key: Vec<u8>, _iv: Vec<u8>) -> Self {
         let cipher = Cipher::aes_128_cbc();
         AesCbc128Sha256Decryptor { key, cipher }
     }
@@ -41,15 +41,17 @@ impl Decryptor for AesCbc128Sha256Decryptor {
 pub struct AesGCM128Sha256Decryptor {
     key: Vec<u8>,
     iv: Vec<u8>,
-    // less_safe_key: aead::LessSafeKey,
-    cipher: Cipher,
-    tag_size: usize,
+    less_safe_key: aead::LessSafeKey,
 }
 
 impl AesGCM128Sha256Decryptor {
     pub fn new(key: Vec<u8>, iv: Vec<u8>) -> Self {
-        let cipher = Cipher::aes_128_gcm();
-        AesGCM128Sha256Decryptor { key, iv, cipher, tag_size: 16}
+        // 将密钥转换为 `ring` 库的密钥类型
+        let unbound_key = aead::UnboundKey::new(&aead::AES_128_GCM, &key).unwrap();
+
+        // 将 `UnboundKey` 转换为 `LessSafeKey`
+        let less_safe_key = aead::LessSafeKey::new(unbound_key);
+        AesGCM128Sha256Decryptor { key, iv, less_safe_key }
     }
 }
 
@@ -62,27 +64,25 @@ impl Decryptor for AesGCM128Sha256Decryptor {
         let nonce_new = &data[..nonce_len];
         let nonce = [ &self.iv, nonce_new].concat();
 
-        let mut c = Crypter::new(self.cipher, Mode::Decrypt, &*self.key, Some(&*nonce)).unwrap();
+        // 将 Nonce 转换为 `ring` 库的 Nonce 类型
+        let nonce = aead::Nonce::try_assume_unique_for_key(&nonce).unwrap();
 
-        let encrypted_data = Vec::from(&data[nonce_len..]);
+        let mut encrypted_data = Vec::from(&data[nonce_len..]);
 
         let additional_data = [0, 0, 0, 0, 0, 0, 0, 1, 17, 3, 3];
 
         // 将 additional_data 扩展为包含数据长度的信息
         let mut final_additional_data = Vec::from(additional_data);
 
-
-        let data_len = encrypted_data.len() - self.tag_size;
+        let tag_size = aead::AES_128_GCM.tag_len();
+        let data_len = encrypted_data.len() - tag_size;
         final_additional_data.push((data_len >> 8) as u8);
         final_additional_data.push((data_len & 0xff) as u8);
 
-        let mut out = vec![0; encrypted_data.len() + self.cipher.block_size()];
         // 解密数据
-        c.aad_update(&*final_additional_data).unwrap();
-        let count = c.update(&*encrypted_data, &mut out).unwrap();
-        out.truncate(count - self.tag_size);
+        let decrypted_data = self.less_safe_key.open_in_place(nonce, aead::Aad::from(final_additional_data), &mut encrypted_data).unwrap();
 
         // 返回解密结果
-        out
+        decrypted_data.to_vec()
     }
 }
