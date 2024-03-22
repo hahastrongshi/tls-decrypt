@@ -56,7 +56,7 @@ pub fn derive_key_material(master_secret: &[u8], client_random: &[u8], server_ra
     out
 }
 
-fn generate_master_secret(premaster_secret: &[u8], client_random: &[u8], server_random: &[u8]) -> Vec<u8> {
+pub fn generate_master_secret(premaster_secret: &[u8], client_random: &[u8], server_random: &[u8]) -> Vec<u8> {
     let label = b"master secret";
 
     let mut seed = Vec::new();
