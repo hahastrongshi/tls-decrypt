@@ -1,7 +1,10 @@
 use openssl::symm::{Cipher, Crypter, Mode};
 use ring::aead;
+use std::fmt;
 
-pub trait Decryptor {
+// add Debug trait
+
+pub trait Decryptor: fmt::Debug {
     // the return value maybe change to another type
     fn decrypt(&self, data: &[u8]) -> Vec<u8>;
 }
@@ -9,6 +12,15 @@ pub trait Decryptor {
 pub struct AesCbc128Sha256Decryptor {
     key: Vec<u8>,
     cipher: Cipher,
+}
+
+impl fmt::Debug for AesCbc128Sha256Decryptor {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("AesCbc128Sha256Decryptor")
+            .field("key", &self.key)
+            .field("cipher", &"Cipher Omitted")
+            .finish()
+    }
 }
 
 impl AesCbc128Sha256Decryptor {
@@ -44,6 +56,15 @@ pub struct AesGCM128Sha256Decryptor {
     // less_safe_key: aead::LessSafeKey,
     cipher: Cipher,
     tag_size: usize,
+}
+
+impl fmt::Debug for AesGCM128Sha256Decryptor {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("AesGCM128Sha256Decryptor")
+            .field("key", &self.key)
+            .field("cipher", &"Cipher Omitted")
+            .finish()
+    }
 }
 
 impl AesGCM128Sha256Decryptor {
