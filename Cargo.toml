@@ -8,7 +8,7 @@ license = "MIT"
 
 [dependencies]
 openssl = "0.10.64"
-ring = {git = "https://github.com/hahastrongshi/ring.git", branch = "main"}
+ring = {git = "https://github.com/hahastrongshi/ring.git", tag = "0.17.9"}
 
 # 添加 test dependencies
 [dev-dependencies]
