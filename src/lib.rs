@@ -1,5 +1,5 @@
 pub mod decrypt;
-// pub mod tls;
+pub mod tls;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right
