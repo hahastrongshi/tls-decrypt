@@ -2,11 +2,11 @@ use openssl::symm::{Cipher, Crypter, Mode};
 use ring::aead;
 use std::fmt;
 
-// add Debug trait
 
 pub trait Decryptor: fmt::Debug {
     // the return value maybe change to another type
     fn decrypt(&self, data: &[u8]) -> Vec<u8>;
+    fn block_size(&self) -> usize;
 }
 
 pub struct AesCbc128Sha256Decryptor {
@@ -31,6 +31,9 @@ impl AesCbc128Sha256Decryptor {
 }
 
 impl Decryptor for AesCbc128Sha256Decryptor {
+    fn block_size(&self) -> usize {
+        self.cipher.block_size()
+    }
     fn decrypt(&self, data: &[u8]) -> Vec<u8> {
         //let cipher = Cipher::aes_128_cbc();
 
@@ -75,6 +78,9 @@ impl AesGCM128Sha256Decryptor {
 }
 
 impl Decryptor for AesGCM128Sha256Decryptor {
+    fn block_size(&self) -> usize {
+        8
+    }
     fn decrypt(&self, data: &[u8]) -> Vec<u8> {
 
         let nonce_len = 8;
